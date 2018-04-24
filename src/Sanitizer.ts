@@ -1,8 +1,10 @@
+import * as validatatorJs from "validator";
+
 import {SanitationMetadata} from "./metadata/SanitationMetadata";
 import {SanitizeTypes} from "./SanitizeTypes";
 import {defaultMetadataStorage} from "./metadata/MetadataStorage";
 import {SanitizerInterface} from "./SanitizerInterface";
-import * as validatatorJs from "validator";
+import NormalizeEmailOptions = ValidatorJS.NormalizeEmailOptions;
 
 /**
  * Sanitizer performs sanitation of the given object based on its metadata.
@@ -34,7 +36,7 @@ export class Sanitizer {
     sanitize(object: any): void {
         this.metadataStorage
             .getSanitizeMetadatasForObject(object.constructor)
-            .filter(metadata => !!object[metadata.propertyName])
+            .filter(metadata => object[metadata.propertyName] !== null && object[metadata.propertyName] !== undefined)
             .forEach(metadata => object[metadata.propertyName] = this.sanitizeValue(object[metadata.propertyName], metadata));
 
         // todo: implemented nested sanitation
@@ -82,7 +84,7 @@ export class Sanitizer {
     /**
      * Canonicalize an email address.
      */
-    normalizeEmail(str: string, lowercase?: boolean): string | false {
+    normalizeEmail(str: string, lowercase?: NormalizeEmailOptions): string | false {
         return validatatorJs.normalizeEmail(str, lowercase);
     }
 
@@ -186,6 +188,7 @@ export class Sanitizer {
             case SanitizeTypes.STRIP_LOW:
                 return this.stripLow(value, metadata.value1);
             case SanitizeTypes.TO_BOOLEAN:
+
                 return this.toBoolean(value, metadata.value1);
             case SanitizeTypes.TO_DATE:
                 return this.toDate(value);
